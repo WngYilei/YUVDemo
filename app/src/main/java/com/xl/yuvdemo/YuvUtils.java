@@ -46,4 +46,15 @@ public class YuvUtils {
      * 将 I420 转 NV12
      */
     public static native void convertI420ToNV12(byte[] src, byte[] dst, int width, int height);
+
+
+    public static native void mirrorI420(byte[] src, int srcWidth, int srcHeight,byte[] dst);
+
+    public static native void rotateI420(byte[] src, int srcWidth, int srcHeight,byte[] dst,int degree);
+
+
+    public static native void scaledI420(byte[] src, int srcWidth, int srcHeight,byte[] dst,int dstWidth, int dstHeight);
+
+
+
 }

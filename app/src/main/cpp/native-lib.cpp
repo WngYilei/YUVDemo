@@ -38,7 +38,7 @@ Java_com_xl_yuvdemo_YuvUtils_compressI420(JNIEnv *env, jclass clazz, jbyteArray 
     jbyte *rotated = scaled;
     if (degree != 0) {
         rotated = new jbyte[dst_size];
-//        YuvUtils::I420Rotate(scaled, rotated, dst_width, dst_height, degree);
+        YuvUtils::I420Rotate(scaled, rotated, dst_width, dst_height, degree);
         if (scaled != src) {
             delete[]scaled;
         }
@@ -100,3 +100,48 @@ Java_com_xl_yuvdemo_YuvUtils_convertI420ToNV12(JNIEnv *env, jclass clazz, jbyteA
 
 
 
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_xl_yuvdemo_YuvUtils_mirrorI420(JNIEnv *env, jclass clazz, jbyteArray i420_src,
+                                        jint src_width,
+                                        jint src_height, jbyteArray i420_dst) {
+
+    jbyte *src = env->GetByteArrayElements(i420_src, nullptr);
+    jbyte *dst = env->GetByteArrayElements(i420_dst, nullptr);
+
+    YuvUtils::I420Mirror(src, dst, src_width, src_height);
+
+    env->ReleaseByteArrayElements(i420_src, src, 0);
+    env->ReleaseByteArrayElements(i420_dst, dst, 0);
+
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_xl_yuvdemo_YuvUtils_rotateI420(JNIEnv *env, jclass clazz, jbyteArray i420_src,
+                                        jint src_width,
+                                        jint src_height, jbyteArray i420_dst, jint degree) {
+
+    jbyte *src = env->GetByteArrayElements(i420_src, nullptr);
+    jbyte *dst = env->GetByteArrayElements(i420_dst, nullptr);
+
+    YuvUtils::I420Rotate(src, dst, src_width, src_height, degree);
+
+    env->ReleaseByteArrayElements(i420_src, src, 0);
+    env->ReleaseByteArrayElements(i420_dst, dst, 0);
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_xl_yuvdemo_YuvUtils_scaledI420(JNIEnv *env, jclass clazz, jbyteArray i420_src,
+                                        jint src_width,
+                                        jint src_height, jbyteArray i420_dst, jint dst_width,
+                                        jint dst_height) {
+
+    jbyte *src = env->GetByteArrayElements(i420_src, nullptr);
+    jbyte *dst = env->GetByteArrayElements(i420_dst, nullptr);
+
+    YuvUtils::I420Scale(src, src_width, src_height, dst, dst_width, dst_height);
+
+    env->ReleaseByteArrayElements(i420_src, src, 0);
+    env->ReleaseByteArrayElements(i420_dst, dst, 0);
+}

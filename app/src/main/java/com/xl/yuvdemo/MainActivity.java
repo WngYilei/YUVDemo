@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 import com.xl.yuvdemo.bean.ImageBean;
@@ -29,14 +30,12 @@ public class MainActivity extends AppCompatActivity {
         String path = getCacheDir().toString() + "/image.jpg";
         binding.iamgeOld.setImageBitmap(BitmapFactory.decodeFile(path));
 
-        binding.sampleText.setOnClickListener(V -> {
-
+        binding.btnCover.setOnClickListener(V -> {
 
             ImageBean imageBean = ImageUtils.imgToNV21(path);
 
 
             byte[] dst = new byte[imageBean.getData().length];
-
 
             YuvUtils.convertNV21ToI420(imageBean.getData(), dst, imageBean.getWight(), imageBean.getHeight());
 
@@ -50,6 +49,62 @@ public class MainActivity extends AppCompatActivity {
             binding.iamgeNew.setImageBitmap(bitmap);
         });
 
+        binding.btnMirror.setOnClickListener(v -> {
+
+            ImageBean imageBean = ImageUtils.imgToNV21(path);
+
+            byte[] dst = new byte[imageBean.getData().length];
+
+            YuvUtils.convertNV21ToI420(imageBean.getData(), dst, imageBean.getWight(), imageBean.getHeight());
+
+
+            byte[] dst2 = new byte[imageBean.getData().length];
+            YuvUtils.mirrorI420(dst, imageBean.getWight(), imageBean.getHeight(), dst2);
+
+
+            Bitmap bitmap = Bitmap.createBitmap(imageBean.getWight(), imageBean.getHeight(), Bitmap.Config.ARGB_8888);
+            YuvUtils.convertI420ToBitmap(dst2, bitmap, imageBean.getWight(), imageBean.getHeight());
+
+            binding.iamgeNew.setImageBitmap(bitmap);
+        });
+
+
+        binding.btnRotate.setOnClickListener(v -> {
+
+            ImageBean imageBean = ImageUtils.imgToNV21(path);
+
+            byte[] dst = new byte[imageBean.getData().length];
+
+            YuvUtils.convertNV21ToI420(imageBean.getData(), dst, imageBean.getWight(), imageBean.getHeight());
+
+
+            byte[] dst2 = new byte[imageBean.getData().length];
+            YuvUtils.rotateI420(dst, imageBean.getWight(), imageBean.getHeight(), dst2, 90);
+
+            Bitmap bitmap = Bitmap.createBitmap(imageBean.getWight(), imageBean.getHeight(), Bitmap.Config.ARGB_8888);
+            YuvUtils.convertI420ToBitmap(dst2, bitmap, imageBean.getWight(), imageBean.getHeight());
+
+            binding.iamgeNew.setImageBitmap(bitmap);
+        });
+
+
+        binding.btnScaled.setOnClickListener(v -> {
+            ImageBean imageBean = ImageUtils.imgToNV21(path);
+
+            byte[] dst = new byte[imageBean.getData().length];
+
+            YuvUtils.convertNV21ToI420(imageBean.getData(), dst, imageBean.getWight(), imageBean.getHeight());
+
+
+            byte[] dst2 = new byte[imageBean.getData().length];
+            YuvUtils.scaledI420(dst, imageBean.getWight(), imageBean.getHeight(), dst2, imageBean.getWight(), imageBean.getWight());
+
+
+            Bitmap bitmap = Bitmap.createBitmap(imageBean.getWight(), imageBean.getHeight(), Bitmap.Config.ARGB_8888);
+            YuvUtils.convertI420ToBitmap(dst2, bitmap, imageBean.getWight(), imageBean.getHeight());
+
+            binding.iamgeNew.setImageBitmap(bitmap);
+        });
     }
 
 }

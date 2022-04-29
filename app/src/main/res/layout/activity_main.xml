@@ -7,13 +7,44 @@
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/sample_text"
-        android:layout_width="match_parent"
+        android:id="@+id/btnCover"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="开始处理"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        android:text="综合处理"
+        app:layout_constraintEnd_toStartOf="@id/btnMirror"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+
+    <Button
+        android:id="@+id/btnMirror"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="镜像"
+        app:layout_constraintEnd_toStartOf="@id/btnRotate"
+        app:layout_constraintStart_toEndOf="@+id/btnCover"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <Button
+        android:id="@+id/btnRotate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="旋转"
+        app:layout_constraintEnd_toStartOf="@+id/btnScaled"
+        app:layout_constraintStart_toEndOf="@+id/btnMirror"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <Button
+        android:id="@+id/btnScaled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="缩放"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btnRotate"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
     <ImageView
         android:id="@+id/iamge_old"
@@ -28,6 +59,7 @@
         android:id="@+id/iamge_new"
         android:layout_width="match_parent"
         android:layout_height="300dp"
+        android:layout_marginTop="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/iamge_old" />
