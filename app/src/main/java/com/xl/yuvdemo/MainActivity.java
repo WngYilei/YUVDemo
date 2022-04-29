@@ -29,10 +29,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         String path = getCacheDir().toString() + "/image.jpg";
         binding.iamgeOld.setImageBitmap(BitmapFactory.decodeFile(path));
+        ImageBean imageBean = ImageUtils.imgToNV21(path);
 
         binding.btnCover.setOnClickListener(V -> {
-
-            ImageBean imageBean = ImageUtils.imgToNV21(path);
 
 
             byte[] dst = new byte[imageBean.getData().length];
@@ -51,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
 
         binding.btnMirror.setOnClickListener(v -> {
 
-            ImageBean imageBean = ImageUtils.imgToNV21(path);
 
             byte[] dst = new byte[imageBean.getData().length];
 
@@ -71,8 +69,6 @@ public class MainActivity extends AppCompatActivity {
 
         binding.btnRotate.setOnClickListener(v -> {
 
-            ImageBean imageBean = ImageUtils.imgToNV21(path);
-
             byte[] dst = new byte[imageBean.getData().length];
 
             YuvUtils.convertNV21ToI420(imageBean.getData(), dst, imageBean.getWight(), imageBean.getHeight());
@@ -89,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         binding.btnScaled.setOnClickListener(v -> {
-            ImageBean imageBean = ImageUtils.imgToNV21(path);
 
             byte[] dst = new byte[imageBean.getData().length];
 

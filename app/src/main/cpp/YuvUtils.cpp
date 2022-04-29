@@ -117,8 +117,11 @@ void YuvUtils::I420Scale(jbyte *src, int src_width, int src_height, jbyte *dst,
 
 void YuvUtils::I420Rotate(jbyte *src, jbyte *dst, int &width, int &height,
                           int degree) {
+
+
     jint src_y_size = width * height;
     jint src_u_size = src_y_size >> 2;
+
     jbyte *src_y = src;
     jbyte *src_u = src + src_y_size;
     jbyte *src_v = src + src_y_size + src_u_size;
@@ -136,11 +139,12 @@ void YuvUtils::I420Rotate(jbyte *src, jbyte *dst, int &width, int &height,
             (uint8_t *) dst_v, height >> 1,
             width, height, (libyuv::RotationMode) degree
     );
+
     // 若为 90 / 270,  则翻转宽高
     if (degree == libyuv::kRotate90 || degree == libyuv::kRotate270) {
-        width += height;
-        height = width - height;
-        width -= height;
+        width = width ^ height;
+        height = width ^ height;
+        width = width ^ height;
     }
 }
 
