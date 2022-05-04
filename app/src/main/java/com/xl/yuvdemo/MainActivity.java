@@ -2,14 +2,21 @@ package com.xl.yuvdemo;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.xl.yuvdemo.bean.ImageBean;
+import com.xl.yuvdemo.camera.CameraActivity;
 import com.xl.yuvdemo.databinding.ActivityMainBinding;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,20 +34,20 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        String path = getCacheDir().toString() + "/image.jpg";
-        binding.iamgeOld.setImageBitmap(BitmapFactory.decodeFile(path));
-        ImageBean imageBean = ImageUtils.imgToNV21(path);
+
+        Bitmap bitmapImage = BitmapFactory.decodeResource(getResources(), R.drawable.image2);
+
+        binding.iamgeOld.setImageBitmap(bitmapImage.copy(Bitmap.Config.ARGB_8888, true));
+
+        ImageBean imageBean = ImageUtils.imgToNV21(bitmapImage);
 
         binding.btnCover.setOnClickListener(V -> {
-
-
             byte[] dst = new byte[imageBean.getData().length];
 
             YuvUtils.convertNV21ToI420(imageBean.getData(), dst, imageBean.getWight(), imageBean.getHeight());
 
             byte[] dst2 = new byte[imageBean.getData().length];
-            YuvUtils.compressI420(dst, imageBean.getWight(), imageBean.getHeight(), dst2, imageBean.getWight(), imageBean.getHeight(), 0, true);
-
+            YuvUtils.compressI420(dst, imageBean.getWight(), imageBean.getHeight(), dst2, imageBean.getWight(), imageBean.getHeight(), 90, true);
 
             Bitmap bitmap = Bitmap.createBitmap(imageBean.getWight(), imageBean.getHeight(), Bitmap.Config.ARGB_8888);
             YuvUtils.convertI420ToBitmap(dst2, bitmap, imageBean.getWight(), imageBean.getHeight());
@@ -69,12 +76,12 @@ public class MainActivity extends AppCompatActivity {
 
         binding.btnRotate.setOnClickListener(v -> {
 
-            byte[] dst = new byte[imageBean.getData().length];
+            byte[] dst = new byte[imageBean.getWight() * imageBean.getHeight() * 3 / 2];
 
             YuvUtils.convertNV21ToI420(imageBean.getData(), dst, imageBean.getWight(), imageBean.getHeight());
 
 
-            byte[] dst2 = new byte[imageBean.getData().length];
+            byte[] dst2 = new byte[imageBean.getWight() * imageBean.getHeight() * 3 / 2];
             YuvUtils.rotateI420(dst, imageBean.getWight(), imageBean.getHeight(), dst2, 90);
 
             Bitmap bitmap = Bitmap.createBitmap(imageBean.getWight(), imageBean.getHeight(), Bitmap.Config.ARGB_8888);
@@ -92,14 +99,15 @@ public class MainActivity extends AppCompatActivity {
 
 
             byte[] dst2 = new byte[imageBean.getData().length];
-            YuvUtils.scaledI420(dst, imageBean.getWight(), imageBean.getHeight(), dst2, imageBean.getWight(), imageBean.getWight());
+            YuvUtils.scaledI420(dst, imageBean.getWight(), imageBean.getHeight(), dst2, imageBean.getWight()/3, imageBean.getWight()/3);
 
 
             Bitmap bitmap = Bitmap.createBitmap(imageBean.getWight(), imageBean.getHeight(), Bitmap.Config.ARGB_8888);
-            YuvUtils.convertI420ToBitmap(dst2, bitmap, imageBean.getWight(), imageBean.getHeight());
+            YuvUtils.convertI420ToBitmap(dst2, bitmap, imageBean.getWight()/3, imageBean.getHeight()/3);
 
             binding.iamgeNew.setImageBitmap(bitmap);
         });
     }
+
 
 }

@@ -1,4 +1,5 @@
 #include "YuvUtils.h"
+#include "util.h"
 #include <jni.h>
 #include <android/bitmap.h>
 #include <cstring>
@@ -93,7 +94,9 @@ Java_com_xl_yuvdemo_YuvUtils_convertI420ToNV12(JNIEnv *env, jclass clazz, jbyteA
 
     jbyte *src = env->GetByteArrayElements(i420_src, nullptr);
     jbyte *dst = env->GetByteArrayElements(nv21_dst, nullptr);
+
     YuvUtils::I420ToNV21(src, dst, width, height);
+
     env->ReleaseByteArrayElements(i420_src, src, 0);
     env->ReleaseByteArrayElements(nv21_dst, dst, 0);
 }
@@ -129,6 +132,7 @@ Java_com_xl_yuvdemo_YuvUtils_rotateI420(JNIEnv *env, jclass clazz, jbyteArray i4
 
     env->ReleaseByteArrayElements(i420_src, src, 0);
     env->ReleaseByteArrayElements(i420_dst, dst, 0);
+
 }
 extern "C"
 JNIEXPORT void JNICALL
