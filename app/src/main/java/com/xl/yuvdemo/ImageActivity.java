@@ -2,23 +2,14 @@ package com.xl.yuvdemo;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 
 import com.xl.yuvdemo.bean.ImageBean;
-import com.xl.yuvdemo.camera.CameraActivity;
 import com.xl.yuvdemo.databinding.ActivityMainBinding;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-public class MainActivity extends AppCompatActivity {
+public class ImageActivity extends AppCompatActivity {
 
 
     static {
@@ -36,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         Bitmap bitmapImage = BitmapFactory.decodeResource(getResources(), R.drawable.image2);
+
+//        Bitmap bitmapImage = BitmapFactory.decodeFile(getCacheDir().toString() + "/image.jpg");
 
         binding.iamgeOld.setImageBitmap(bitmapImage.copy(Bitmap.Config.ARGB_8888, true));
 
@@ -99,11 +92,11 @@ public class MainActivity extends AppCompatActivity {
 
 
             byte[] dst2 = new byte[imageBean.getData().length];
-            YuvUtils.scaledI420(dst, imageBean.getWight(), imageBean.getHeight(), dst2, imageBean.getWight()/3, imageBean.getWight()/3);
+            YuvUtils.scaledI420(dst, imageBean.getWight(), imageBean.getHeight(), dst2, imageBean.getWight() / 3, imageBean.getWight() / 3);
 
 
             Bitmap bitmap = Bitmap.createBitmap(imageBean.getWight(), imageBean.getHeight(), Bitmap.Config.ARGB_8888);
-            YuvUtils.convertI420ToBitmap(dst2, bitmap, imageBean.getWight()/3, imageBean.getHeight()/3);
+            YuvUtils.convertI420ToBitmap(dst2, bitmap, imageBean.getWight() / 3, imageBean.getHeight() / 3);
 
             binding.iamgeNew.setImageBitmap(bitmap);
         });

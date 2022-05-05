@@ -25,4 +25,5 @@ target_link_libraries(
         yuvdemo
         yuv
         jnigraphics
+        android
         ${log-lib})

@@ -1,5 +1,6 @@
 #include "YuvUtils.h"
 #include "util.h"
+#include "CameraYuv.h"
 #include <jni.h>
 #include <android/bitmap.h>
 #include <cstring>
@@ -149,3 +150,43 @@ Java_com_xl_yuvdemo_YuvUtils_scaledI420(JNIEnv *env, jclass clazz, jbyteArray i4
     env->ReleaseByteArrayElements(i420_src, src, 0);
     env->ReleaseByteArrayElements(i420_dst, dst, 0);
 }
+
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_com_xl_yuvdemo_YuvUtils_setSurfaceView(JNIEnv *env, jclass clazz, jobject surface_view) {
+    auto *cameraYuv = new CameraYuv();
+    if (!surface_view) {
+        cameraYuv->setSurfaceView(nullptr);
+        return 0;
+    }
+    cameraYuv->setSurfaceView(ANativeWindow_fromSurface(env, surface_view));
+    return (jlong) cameraYuv;
+}
+
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_xl_yuvdemo_YuvUtils_nativeDetect(JNIEnv *env, jclass clazz, jlong native_camera_yuv,
+                                          jbyteArray data, jint width, jint height,
+                                          jint rotation_degrees) {
+
+    if (!native_camera_yuv) return;
+
+    auto *cameraYuv = reinterpret_cast<CameraYuv *>(native_camera_yuv);
+    jbyte *input_image = env->GetByteArrayElements(data, nullptr);
+
+    cameraYuv->detect((uint8_t *) input_image, width, height);
+
+}
+
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_xl_yuvdemo_YuvUtils_release(JNIEnv *env, jclass clazz) {
+
+
+}
+

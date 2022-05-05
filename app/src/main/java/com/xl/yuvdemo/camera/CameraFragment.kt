@@ -1,53 +1,30 @@
 package com.xl.yuvdemo.camera
 
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.content.res.Configuration
-import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.hardware.display.DisplayManager
-import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
-import android.webkit.MimeTypeMap
 import androidx.camera.core.*
-import androidx.camera.core.ImageCapture.Metadata
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
-import androidx.core.net.toFile
-import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
-import com.sheenhan.health.camera.ANIMATION_FAST_MILLIS
-import com.sheenhan.health.camera.ANIMATION_SLOW_MILLIS
-import com.sheenhan.health.camera.simulateClick
 import com.sheenhan.health.camera.toByteArray
+import com.xl.yuvdemo.CameraActivity
 import com.xl.yuvdemo.ImageUtils
-import com.xl.yuvdemo.R
 import com.xl.yuvdemo.YuvUtils
 import com.xl.yuvdemo.databinding.CameraUiContainerBinding
 import com.xl.yuvdemo.databinding.FragmentCameraBinding
 import java.io.File
-import java.nio.ByteBuffer
-import java.nio.file.Files.createFile
-import java.text.SimpleDateFormat
-import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-
-/** Helper type alias used for analysis use case callbacks */
-typealias LamaListener = (luma: Double) -> Unit
 
 /**
  * Main fragment for this app. Implements all camera operations including:
@@ -62,7 +39,6 @@ class CameraFragment : Fragment() {
 
     private val fragmentCameraBinding get() = _fragmentCameraBinding!!
 
-    private var cameraUiContainerBinding: CameraUiContainerBinding? = null
 
     private lateinit var outputDirectory: File
     private lateinit var broadcastManager: LocalBroadcastManager
@@ -77,8 +53,6 @@ class CameraFragment : Fragment() {
     private val displayManager by lazy {
         requireContext().getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
     }
-
-    private val executorService = Executors.newSingleThreadExecutor()
 
     private lateinit var cameraExecutor: ExecutorService
 
@@ -111,20 +85,6 @@ class CameraFragment : Fragment() {
         return fragmentCameraBinding.root
     }
 
-    private fun setGalleryThumbnail(uri: Uri) {
-        // Run the operations in the view's thread
-        cameraUiContainerBinding?.photoViewButton?.let { photoViewButton ->
-            photoViewButton.post {
-                // Remove thumbnail padding
-                photoViewButton.setPadding(resources.getDimension(R.dimen.stroke_small).toInt())
-                // Load thumbnail into circular button using Glide
-                Glide.with(photoViewButton)
-                    .load(uri)
-                    .apply(RequestOptions.circleCropTransform())
-                    .into(photoViewButton)
-            }
-        }
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -146,12 +106,30 @@ class CameraFragment : Fragment() {
             // Keep track of the display in which this view is attached
             displayId = fragmentCameraBinding.viewFinder.display.displayId
 
-            // Build UI controls
-            updateCameraUi()
 
             // Set up the camera and its use cases
             setUpCamera()
         }
+
+        fragmentCameraBinding.surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
+            override fun surfaceCreated(holder: SurfaceHolder) {
+
+            }
+
+            override fun surfaceChanged(
+                holder: SurfaceHolder,
+                format: Int,
+                width: Int,
+                height: Int
+            ) {
+                YuvUtils.setSurface(holder.surface)
+            }
+
+            override fun surfaceDestroyed(holder: SurfaceHolder) {
+
+            }
+
+        });
 
 
     }
@@ -160,11 +138,10 @@ class CameraFragment : Fragment() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
-        // Rebind the camera with the updated display metrics
+
         bindCameraUseCases()
 
-        // Enable or disable switching between cameras
-        updateCameraSwitchButton()
+
     }
 
     /** Initialize CameraX, and prepare to bind the camera use cases  */
@@ -179,8 +156,6 @@ class CameraFragment : Fragment() {
                 hasBackCamera() -> CameraSelector.LENS_FACING_BACK
                 else -> throw IllegalStateException("Back and front camera are unavailable")
             }
-
-            updateCameraSwitchButton()
 
 
             bindCameraUseCases()
@@ -222,18 +197,10 @@ class CameraFragment : Fragment() {
 
             .also { it ->
                 it.setAnalyzer(cameraExecutor) {
-                    if (isTake) {
-                        isTake = false
+                    val data = ImageUtils.getDataFromImage(it)
 
+                    YuvUtils.detect(data, it.width, it.height,it.imageInfo.rotationDegrees)
 
-//                        val byteBuffer = ImageUtils.yuv420ThreePlanesToNV21(it.planes, it.width, it.height)
-                        val bitmap =
-                            ImageUtils.cover(it.planes[0].buffer.toByteArray(), it.width, it.height)
-                        activity?.runOnUiThread {
-                            Glide.with(requireContext()).load(bitmap)
-                                .into(fragmentCameraBinding.iamge)
-                        }
-                    }
                     it.close()
                 }
             }
@@ -244,7 +211,11 @@ class CameraFragment : Fragment() {
         try {
 
             camera = cameraProvider.bindToLifecycle(
-                this, cameraSelector, preview, imageCapture, imageAnalyzer
+                this,
+                cameraSelector,
+                preview,
+                imageCapture,
+                imageAnalyzer
             )
 
             preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
@@ -260,66 +231,6 @@ class CameraFragment : Fragment() {
             return AspectRatio.RATIO_4_3
         }
         return AspectRatio.RATIO_16_9
-    }
-
-    private fun updateCameraUi() {
-
-        // Remove previous UI if any
-        cameraUiContainerBinding?.root?.let {
-            fragmentCameraBinding.root.removeView(it)
-        }
-
-        cameraUiContainerBinding = CameraUiContainerBinding.inflate(
-            LayoutInflater.from(requireContext()),
-            fragmentCameraBinding.root,
-            true
-        )
-
-
-        executorService.submit {
-            outputDirectory.listFiles { file ->
-                EXTENSION_WHITELIST.contains(file.extension.uppercase(Locale.ROOT))
-            }?.maxOrNull()?.let {
-                setGalleryThumbnail(Uri.fromFile(it))
-            }
-        }
-
-
-        cameraUiContainerBinding?.cameraCaptureButton?.simulateClick {
-            isTake = true
-        }
-
-
-        cameraUiContainerBinding?.cameraSwitchButton?.let {
-
-            it.isEnabled = false
-
-            it.setOnClickListener {
-
-                lensFacing = if (CameraSelector.LENS_FACING_FRONT == lensFacing) {
-                    CameraSelector.LENS_FACING_BACK
-                } else {
-                    CameraSelector.LENS_FACING_FRONT
-                }
-
-                bindCameraUseCases()
-            }
-        }
-
-
-        cameraUiContainerBinding?.photoViewButton?.setOnClickListener {
-            isTake = true
-        }
-    }
-
-
-    private fun updateCameraSwitchButton() {
-        try {
-            cameraUiContainerBinding?.cameraSwitchButton?.isEnabled =
-                hasBackCamera() && hasFrontCamera()
-        } catch (exception: CameraInfoUnavailableException) {
-            cameraUiContainerBinding?.cameraSwitchButton?.isEnabled = false
-        }
     }
 
 
@@ -340,43 +251,6 @@ class CameraFragment : Fragment() {
         private const val PHOTO_EXTENSION = ".jpg"
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
-        var isTake = false
-
-        /** Helper function used to create a timestamped file */
-        private fun createFile(baseFolder: File) =
-            File(
-                baseFolder,
-                SimpleDateFormat(
-                    FILENAME,
-                    Locale.US
-                ).format(System.currentTimeMillis()) + PHOTO_EXTENSION
-            )
-
-        const val KEY_EVENT_EXTRA = "key_event_extra"
-        const val KEY_EVENT_ACTION = "key_event_action"
     }
 
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        if (!hidden) {
-            checkEmpty()
-        }
-    }
-
-    private fun checkEmpty() {
-        val rootDirectory = CameraActivity.getOutputDirectory(requireContext())
-        val mediaList = rootDirectory.listFiles { file ->
-            EXTENSION_WHITELIST.contains(file.extension.uppercase(Locale.ROOT))
-        }?.sortedDescending()?.toMutableList() ?: mutableListOf()
-        if (mediaList.isEmpty()) {
-            cameraUiContainerBinding?.photoViewButton?.setPadding(
-                resources.getDimension(R.dimen.spacing_large).toInt()
-            )
-            // Load thumbnail into circular button using Glide
-            Glide.with(cameraUiContainerBinding?.photoViewButton!!)
-                .load(R.drawable.ic_photo)
-                .centerCrop()
-                .into(cameraUiContainerBinding?.photoViewButton!!)
-        }
-    }
 }

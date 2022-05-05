@@ -13,6 +13,7 @@ import android.os.Build
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.sheenhan.health.camera.padWithDisplayCutout
 import com.sheenhan.health.camera.simulateClick
+import com.xl.yuvdemo.CameraActivity
 
 import com.xl.yuvdemo.databinding.FragmentGalleryBinding
 import java.util.*

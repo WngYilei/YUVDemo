@@ -1,4 +1,4 @@
-package com.xl.yuvdemo.camera
+package com.xl.yuvdemo
 
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
@@ -6,7 +6,8 @@ import android.os.Bundle
 
 import java.io.File
 import androidx.lifecycle.*
-import com.xl.yuvdemo.R
+import com.xl.yuvdemo.camera.CameraFragment
+import com.xl.yuvdemo.camera.GalleryFragment
 import com.xl.yuvdemo.databinding.ActivityCameraBinding
 
 class CameraActivity : AppCompatActivity() {
